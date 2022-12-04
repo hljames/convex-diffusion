@@ -1,0 +1,11 @@
+defaults:
+  - _self_
+  - _base_data_config.yaml   # general, dataset-independent, parameters
+
+_target_: src.datamodules.oisstv2.OISSTv2DataModule
+data_dir: "/global/cfs/cdirs/m3504/oisstv2-daily/"
+boxes: "all"                    # "all", or a list of boxes, e.g. [1, 53, 189]
+box_size: 60                    # size of the box in degrees (lat, lon)
+horizon: 1                      # number of time steps to predict ahead
+pixelwise_normalization: True   # normalize each pixel individually (or based on box-mean mean and std)
+

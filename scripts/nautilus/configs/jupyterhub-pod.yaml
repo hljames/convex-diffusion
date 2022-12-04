@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jupyterhub
+spec:
+  containers:
+  - name: gpu-container
+    image: cschranz/gpu-jupyter:v1.4_cuda-11.6_ubuntu-20.04
+    command: ["jupyter", "lab", "--NotebookApp.token=627a7b3b"]
+    volumeMounts:
+    - mountPath: /oisst-daily
+      name: oisst-daily
+    resources:
+      limits:
+        nvidia.com/gpu: "1"
+        memory: "32G"
+        cpu: "10"
+      requests:
+        nvidia.com/gpu: "1"
+        memory: "32G"
+        cpu: "8"
+  volumes:
+    - name: oisst-daily
+      persistentVolumeClaim:
+        claimName: oisst-daily
+  restartPolicy: Never
+#  affinity:
+#    nodeAffinity:
+#      requiredDuringSchedulingIgnoredDuringExecution:
+#        nodeSelectorTerms:
+#        - matchExpressions:
+#          - key: nvidia.com/gpu.product
+#            operator: In
+#            values:
+#            - NVIDIA-GeForce-RTX-3090

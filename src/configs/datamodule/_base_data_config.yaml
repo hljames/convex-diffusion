@@ -1,0 +1,11 @@
+data_dir: "/global/cfs/cdirs/m3504/"   # Make sure that it is an absolute path!
+
+batch_size: 16                 # batch size for training
+eval_batch_size: ${datamodule.batch_size} # batch size for validation/testing (larger might be faster, but uses more RAM)
+
+num_workers: -1              # number of workers for data loading  (-1 means all available CPUs)
+pin_memory: True
+drop_last: False
+verbose: ${verbose}
+
+seed: 77                # random seed for reproducibility of random data split (different to the one for training)

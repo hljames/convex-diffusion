@@ -1,0 +1,12 @@
+# Input volume for OISSTv2 sea surface temperature data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: oisst-daily
+spec:
+  storageClassName: rook-cephfs
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 65Gi

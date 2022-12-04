@@ -1,0 +1,19 @@
+_target_: src.models.unet.Unet
+
+defaults:
+  - _self_
+  - _base_model_config.yaml   # general, model independent, parameters
+
+dim: 64
+dim_mults: [1, 2, 4]      # [1, 2, 4, 8] does not work for 60x60 input with current setup
+input_channels: null      # automatically inferred from the dataset/datamodule
+output_channels: null     # automatically inferred from the dataset/datamodule
+resnet_block_groups: 8  # True
+double_conv_layer: True   # Whether to use double convNext layer or not
+learned_variance: False
+learned_sinusoidal_cond: False
+learned_sinusoidal_dim: 16
+
+conditioned: False       # To be used for diffusion models
+with_time_emb: False
+

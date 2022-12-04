@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: download-weatherbench
+  namespace: deep-forecast
+spec:
+  template:
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: topology.kubernetes.io/region
+                operator: In
+                values:
+                  - us-west
+      volumes:   # Persistent storage
+        - name: weatherbench-5deg
+          persistentVolumeClaim:
+            claimName: weatherbench-5deg
+      containers:
+        - name: run-on-gpu
+          # image: pytorch/pytorch:1.12.0-cuda11.3-cudnn8-runtime
+          # image: gitlab-registry.nautilus.optiputer.net/prp/jupyter-stack/tensorflow
+          image: gitlab-registry.nrp-nautilus.io/prp/jupyter-stack/prp
+          workingDir: /convex_diffusion
+          command: [ "/bin/bash","-c" ]
+          args: [
+                "
+                cd /convex_diffusion/data/weatherbench/5deg;
+                wget 'https://dataserv.ub.tum.de/s/m1524895/download?path=%2F5.625deg&files=all_5.625deg.zip' -O all_5.625deg.zip --no-check-certificate
+                unzip all_5.625deg.zip
+                " ]
+          volumeMounts:
+            - name: weatherbench-5deg
+              mountPath: /convex_diffusion/data/weatherbench/5deg/
+          resources:
+            limits:
+              memory: "30G"
+              cpu: "8"
+            requests:
+              memory: "30G"
+              cpu: "4"
+      restartPolicy: Never
+  backoffLimit: 4
+  # The backoffLimit field specifies how many times your pod will run in case the exit status of your script is not 0
+  #   or if pod was terminated for a different reason (for example a node was rebooted).
+  #   It's a good idea to have it more than 0.

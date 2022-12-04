@@ -1,0 +1,9 @@
+defaults:
+  - _self_
+  - _base.yaml
+
+_target_: src.diffusion.mixup_diffusion.MixupDiffusion
+timesteps: 1000
+sampling_timesteps: null   # null means use all timesteps
+beta_schedule: "cosine"
+interpolation_type: "convex"   # convex, ddpm

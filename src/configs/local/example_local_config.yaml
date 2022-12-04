@@ -1,0 +1,18 @@
+# @package _global_
+# This is an exemplary local config file that you can adapt for your local configurations:
+# E.g.: Only use CPU, or change the data_dir, or the input file names, or the number of workers for dataloading etc..
+defaults:
+  - override /trainer: default.yaml
+
+# Override data dir for local runs here!
+datamodule:
+  data_dir: "C:/Users/salvarc/data/"
+  num_workers: 1
+
+# Override here to use CPU only locally
+trainer:
+  gpus: 0
+
+# Override here to change the complexity of the model, or whether to use CMIP6_<ERR>_clim_err.isoph6.npy files
+model:
+  hidden_dims: [64]

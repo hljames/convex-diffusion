@@ -1,0 +1,21 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py experiment=oisst_full_mixup
+
+defaults:
+  - oisst_full.yaml
+  - override /diffusion: mixup.yaml
+  - _self_
+
+name: "OISSTv2-MixUp"
+
+trainer:
+  max_epochs: 20
+
+model:
+  dim: 64
+
+logger:
+  wandb:
+    tags: ["oisstv2", "Mixup"]

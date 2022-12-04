@@ -1,0 +1,23 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py experiment=oisst
+
+defaults:
+  - oisst_full.yaml
+  - override /model: unet_convnext.yaml
+  - _self_
+
+name: "OISSTv2-ConvNext"
+
+seed: 7
+
+trainer:
+  max_epochs: 20
+
+model:
+  dim: 64
+
+logger:
+  wandb:
+    tags: ["oisstv2", "unet_convnext"]

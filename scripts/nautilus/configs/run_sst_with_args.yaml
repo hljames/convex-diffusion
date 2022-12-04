@@ -1,0 +1,109 @@
+# Launch on nautilus with:
+#     kubectl create -f run.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: run-sst-gpu-job-1ff-baseeeee
+  namespace: deep-forecast
+spec:
+  template:
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: topology.kubernetes.io/region
+                operator: In
+                values:
+                  - us-west
+              - key: nvidia.com/gpu.product
+                operator: In
+                values:
+                  - Quadro-RTX-8000
+                  - Tesla-V100-SXM2-32GB
+                  - NVIDIA-A100-PCIE-40GB-MIG-2g.10gb
+                  - NVIDIA-GeForce-RTX-3090
+                  - Quadro-RTX-6000
+              #- key: kubernetes.io/hostname
+              #  operator: In
+              #  values:
+              #    - uicnrp-fiona.evl.uic.edu
+      volumes:   # Persistent storage
+        - name: oisst-daily
+          persistentVolumeClaim:
+            claimName: oisst-daily
+        - name: results-ckpts
+          persistentVolumeClaim:
+            claimName: results-ckpts   # for saving logging stuff, results and checkpoints
+        - name: git-repo
+          emptyDir: {}
+      initContainers:
+        - name: clone-git-repo
+          image: alpine/git
+          env:    # Environment variables
+            # The git secrets can be saved via
+            # kubectl create secret generic github-secret --from-literal=user=<USERNAME> --from-literal=token=<ACCESS-TOKEN>
+            - name: GIT_USERNAME   # GitHub username
+              valueFrom:
+                secretKeyRef:
+                  name: github-secret
+                  key: user
+            - name: GIT_PASSWORD  # GitHub Access Token
+              valueFrom:
+                secretKeyRef:
+                  name: github-secret
+                  key: token
+          args:
+            - clone
+            - --single-branch
+            - --
+            - https://$(GIT_USERNAME):$(GIT_PASSWORD)@github.com/salvaRC/convex-diffusion.git
+            - /convex_diffusion/code
+          volumeMounts:
+            - name: git-repo
+              mountPath: /convex_diffusion
+      containers:
+        - name: run-on-gpu
+          # image: pytorch/pytorch:1.12.0-cuda11.3-cudnn8-runtime
+          # image: gitlab-registry.nautilus.optiputer.net/prp/jupyter-stack/tensorflow
+          # image: gitlab-registry.nautilus.optiputer.net/prp/jupyter-stack/prp
+          image: gitlab-registry.nrp-nautilus.io/salvarc/climate-ml:latest
+          workingDir: /convex_diffusion/code
+          command: [ "/bin/bash","-c" ]
+          args: [
+                "
+                export WANDB_CONFIG_DIR=/convex_diffusion/results/oisst-daily/wandb;
+                mkdir -p /convex_diffusion/results/oisst-daily;
+                DATA_DIR=/convex_diffusion/data/oisstv2-daily;
+                WORK_DIR=/convex_diffusion/results/oisst-daily;
+                echo extra args: ${ARGS};
+                python run.py model.optimizer.lr=1e-4 experiment=oisst_unet trainer.gpus=-1 work_dir=${WORK_DIR} datamodule.data_dir=${DATA_DIR} ${ARGS};
+                "
+        #        python run.py model.optimizer.lr=1e-4
+          ]
+          volumeMounts:
+            - name: oisst-daily
+              mountPath: /convex_diffusion/data/oisstv2-daily
+            - name: results-ckpts
+              mountPath: /convex_diffusion/results
+            - name: git-repo
+              mountPath: /convex_diffusion
+          resources:
+            limits:
+              nvidia.com/gpu: "1"
+              memory: "90G"
+              cpu: "4"
+            requests:
+              nvidia.com/gpu: "1"
+              memory: "80G"
+              cpu: "4"
+      restartPolicy: Never
+  backoffLimit: 0    # Number of retries if the Job fails
+  # The backoffLimit field specifies how many times your pod will run in case the exit status of your script is not 0
+  #   or if pod was terminated for a different reason (for example a node was rebooted).
+  #   It's a good idea to have it more than 0.

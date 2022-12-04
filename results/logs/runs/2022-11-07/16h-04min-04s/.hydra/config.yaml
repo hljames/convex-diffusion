@@ -1,0 +1,78 @@
+work_dir: ./results
+ckpt_dir: ${work_dir}/checkpoints/
+log_dir: ${work_dir}/logs/
+print_config: true
+ignore_warnings: true
+test_after_training: false
+save_config_to_wandb: true
+verbose: true
+seed: 11
+name: null
+trainer:
+  _target_: pytorch_lightning.Trainer
+  gpus: 0
+  min_epochs: 1
+  max_epochs: 50
+  gradient_clip_val: 1.0
+  accumulate_grad_batches: 2
+  resume_from_checkpoint: null
+  precision: 32
+  num_sanity_val_steps: 1
+model:
+  _target_: src.models.unet_convnext.UnetConvNext
+  dim: 64
+  dim_mults:
+  - 1
+  - 2
+  - 4
+  input_channels: null
+  output_channels: null
+  with_time_emb: false
+  double_conv_layer: true
+  output_mean_scale: false
+  residual: false
+  optimizer:
+    name: adam
+    lr: 7.0e-05
+    weight_decay: 0.0
+    eps: 1.0e-08
+    betas:
+    - 0.9
+    - 0.99
+  monitor: val/mse
+  mode: min
+  name: ''
+  loss_function: mse
+datamodule:
+  _target_: src.datamodules.oisstv2.OISSTv2DataModule
+  data_dir: /global/cfs/cdirs/m3504/
+  boxes: all
+  box_size: 60
+  horizon: 1
+  pixelwise_normalization: true
+  batch_size: 16
+  eval_batch_size: ${datamodule.batch_size}
+  num_workers: -1
+  pin_memory: true
+  drop_last: false
+  verbose: ${verbose}
+  seed: 77
+callbacks:
+  model_checkpoint:
+    _target_: pytorch_lightning.callbacks.ModelCheckpoint
+    monitor: ${model.monitor}
+    mode: ${model.mode}
+    save_top_k: 1
+    save_last: true
+    verbose: ${verbose}
+    dirpath: ${ckpt_dir}
+    filename: ${name}_epoch{epoch:03d}_seed${seed}
+    auto_insert_metric_name: false
+  early_stopping:
+    _target_: pytorch_lightning.callbacks.EarlyStopping
+    monitor: ${model.monitor}
+    mode: ${model.mode}
+    patience: 5
+    min_delta: 0
+logger: {}
+default_mode: true

@@ -1,0 +1,32 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py experiment=oisst_pacific_unet
+
+defaults:
+  - example.yaml
+  - override /datamodule: oisst.yaml
+  - _self_
+
+name: "OISSTv2PacificSubset"
+
+seed: 7
+
+trainer:
+  min_epochs: 1
+  max_epochs: 50
+  gradient_clip_val: 1.0
+  gpus: -1      # -1 for all available GPUs
+  accumulate_grad_batches: 8
+
+datamodule:
+  batch_size: 32
+  eval_batch_size: 32
+  horizon: 1
+  pixelwise_normalization: True
+  boxes: [84, 85, 86, 87, 88, 89, 108, 109, 110, 111, 112]
+
+
+logger:
+  wandb:
+    tags: ["oisstv2", "pacific_subset"]

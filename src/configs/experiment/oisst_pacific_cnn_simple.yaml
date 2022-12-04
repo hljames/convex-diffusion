@@ -1,0 +1,15 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py experiment=oisst_pacific_unet
+
+defaults:
+  - oisst_pacific.yaml
+  - override /model: cnn_simple.yaml
+  - _self_
+
+name: "OISSTv2PacificSubset-CNNsimple"
+
+logger:
+  wandb:
+    tags: ["oisstv2", "CNN-simple", "pacific_subset"]

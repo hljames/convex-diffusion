@@ -1,0 +1,11 @@
+defaults:
+  - /optimizer: adam.yaml
+  - /scheduler: null # no scheduler
+  - _self_
+
+monitor: "val/mse"   # which logged value/metric to monitor (used for checkpointing/early stopping/LR scheduling)
+mode: "min"          # "min" means lower metric value is better, can also be "max"
+name: ""
+loss_function: "mse" # loss function to use for training
+
+#################################################################################################

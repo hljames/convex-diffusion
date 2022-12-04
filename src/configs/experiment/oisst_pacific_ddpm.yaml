@@ -1,0 +1,18 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py experiment=oisst_pacific_unet
+
+defaults:
+  - oisst_pacific.yaml
+  - override /diffusion: denoising.yaml
+  - _self_
+
+name: "OISSTv2PacificSubset-DDPM"
+
+model:
+  dim: 64
+
+logger:
+  wandb:
+    tags: ["oisstv2", "DDPM", "pacific_subset"]

@@ -1,0 +1,13 @@
+# @package _global_
+
+defaults:
+  - _base.yaml
+  - _self_
+  - params@hydra.sweeper.params: mlp.yaml
+  - override /model: mlp.yaml  # model config file (see src/config/model/mlp.yaml)
+  # - override /datamodule: my-datamodule.yaml
+
+name: "optuna-mlp"
+hydra:
+  sweeper:
+    study_name: "MLP"

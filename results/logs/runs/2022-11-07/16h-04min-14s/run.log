@@ -1,0 +1,5 @@
+[2022-11-07 16:04:14,085][src.utilities.utils][INFO] - Disabling python warnings! <config.ignore_warnings=True>
+[2022-11-07 16:04:14,090][src.datamodules.oisstv2][INFO] - Using OISSTv2 data directory: /global/cfs/cdirs/m3504/subregion-60x60boxes-pixelwise_stats
+[2022-11-07 16:04:14,097][UnetConvNext][INFO] - Is time embedding used? False
+[2022-11-07 16:04:14,259][src.utilities.config_utils][INFO] - Hydra config will NOT be saved to WandB.
+[2022-11-07 16:04:14,290][src.datamodules.oisstv2][ERROR] - Could not open OISSTv2 data files from /global/cfs/cdirs/m3504/subregion-60x60boxes-pixelwise_stats/sst.day.mean.box*.nc. Check that the data directory is correct: /global/cfs/cdirs/m3504/subregion-60x60boxes-pixelwise_stats

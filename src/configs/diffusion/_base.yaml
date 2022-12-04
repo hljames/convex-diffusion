@@ -1,0 +1,18 @@
+# @package _global_
+
+# to execute this experiment run:
+# python run.py diffusion=unet_resnet
+
+defaults:
+  - override /model: unet_resnet.yaml
+  - _self_
+
+diffusion:
+  timesteps: 1000
+  loss_function: "l1"
+  beta_schedule: "cosine"
+
+model:
+  conditioned: True
+  with_time_emb: True
+  loss_function: ${diffusion.loss_function}

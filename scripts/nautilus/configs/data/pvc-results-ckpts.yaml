@@ -1,0 +1,13 @@
+# PVC to store logging results, checkpoints, and other files resulting from ML run
+# Edit it with ``kubectl edit pvc results-ckpts``
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: results-ckpts
+spec:
+  storageClassName: rook-cephfs
+  accessModes:
+  - ReadWriteMany
+  resources:
+    requests:
+      storage: 30Gi

@@ -1,0 +1,79 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: download-oisst
+  namespace: deep-forecast
+spec:
+  template:
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: topology.kubernetes.io/region
+                operator: In
+                values:
+                  - us-west
+      volumes:   # Persistent storage
+        - name: oisst-daily
+          persistentVolumeClaim:
+            claimName: oisst-daily
+        - name: git-repo
+          emptyDir: {}
+      initContainers:
+        - name: clone-git-repo
+          image: alpine/git
+          env: # Environment variables
+            # The git secrets can be saved via
+            # kubectl create secret generic github-secret --from-literal=user=<USERNAME> --from-literal=token=<ACCESS-TOKEN>
+            - name: GIT_USERNAME   # GitHub username
+              valueFrom:
+                secretKeyRef:
+                  name: github-secret
+                  key: user
+            - name: GIT_PASSWORD  # GitHub Access Token
+              valueFrom:
+                secretKeyRef:
+                  name: github-secret
+                  key: token
+          args:
+            - clone
+            - --single-branch
+            - --
+            - https://$(GIT_USERNAME):$(GIT_PASSWORD)@github.com/salvaRC/convex-diffusion.git
+            - /convex_diffusion/code
+          volumeMounts:
+            - name: git-repo
+              mountPath: /convex_diffusion
+      containers:
+        - name: download-oisst
+          image: gitlab-registry.nrp-nautilus.io/prp/jupyter-stack/prp
+          workingDir: /convex_diffusion/code
+          command: [ "/bin/bash","-c" ]
+          args: [
+                "
+                cd data/dataset_creation;
+                python download_oisstv2.py /convex_diffusion/data/oisst-daily
+                " ]
+          volumeMounts:
+            - name: oisst-daily
+              mountPath: /convex_diffusion/data/oisst-daily
+            - name: git-repo
+              mountPath: /convex_diffusion
+          resources:
+            limits:
+              memory: "30G"
+              cpu: "8"
+            requests:
+              memory: "30G"
+              cpu: "4"
+      restartPolicy: Never
+  backoffLimit: 4
+  # The backoffLimit field specifies how many times your pod will run in case the exit status of your script is not 0
+  #   or if pod was terminated for a different reason (for example a node was rebooted).
+  #   It's a good idea to have it more than 0.

@@ -1,0 +1,22 @@
+#!/bin/bash -l
+#SBATCH -C gpu
+#SBATCH -A m3504
+#SBATCH --time=4:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --gpus-per-task=1
+#SBATCH --cpus-per-task=10
+#SBATCH -o sout/%j.out
+
+# Configuration
+nproc_per_node=1
+config=bs128-opt
+
+# Load software
+module load cgpu
+module load pytorch/1.7.0-gpu
+
+# Launch one SLURM task, and use torch distributed launch utility
+# to spawn training worker processes; one per GPU
+srun -N 1 -n 1 python -m torch.distributed.launch --nproc_per_node=$nproc_per_node \
+    train.py --config=$config

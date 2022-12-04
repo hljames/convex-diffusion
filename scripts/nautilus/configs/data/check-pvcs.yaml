@@ -1,0 +1,52 @@
+# Launch on nautilus with:
+#     kubectl create -f run.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: salva-check-pvcs
+  namespace: deep-forecast
+spec:
+  template:
+    spec:
+      volumes:   # Persistent storage
+        - name: weatherbench-5deg
+          persistentVolumeClaim:
+            claimName: weatherbench-5deg
+        - name: oisst-daily
+          persistentVolumeClaim:
+            claimName: oisst-daily
+      containers:
+        - name: check-pvcs
+          image: gitlab-registry.nrp-nautilus.io/prp/jupyter-stack/prp
+          workingDir: /convex_diffusion/code
+          command: [ "/bin/bash","-c" ]
+          args: [
+                "echo 'pwd:' && pwd;
+                echo 'ls -l';
+                ls -l -t;
+                cd ../data/weatherbench;
+                echo 'WeatherBench ls -l';
+                ls -l -t;
+                cd ../oisst-daily;
+                echo 'OISST ls -l'; 
+                ls -l -t;
+                echo 'OISST subregion-60x60boxes-pixelwise_stats ls -l';
+                ls subregion-60x60boxes-pixelwise_stats -l -t;
+                echo 'OISST subregion-60x60boxes-box_mean_stats ls -l';
+                ls subregion-60x60boxes-box_mean_stats -l -t;
+                " ]
+          volumeMounts:
+            - name: weatherbench-5deg
+              mountPath: /convex_diffusion/data/weatherbench
+            - name: oisst-daily
+              mountPath: /convex_diffusion/data/oisst-daily
+          resources:
+            limits:
+              memory: "100Mi"
+              cpu: "1"
+            requests:
+              memory: "50Mi"
+              cpu: 50m
+      restartPolicy: Never
+  backoffLimit: 4
+  ttlSecondsAfterFinished: 3600  # 1 hour

@@ -1,0 +1,4 @@
+- trainer.gpus=0
+- model=unet_convnext
+- logger=none
+- callbacks=default

@@ -1,0 +1,33 @@
+# Launch this pod with:
+#     kubectl create -f interactive-pod.yaml
+# Attach to the pod with:
+#     kubectl exec -it interactive -- /bin/bash
+apiVersion: v1
+kind: Pod
+metadata:
+  name: interactive-pod
+spec:
+  containers:
+  - name: my-interactive-pod
+    image: gitlab-registry.nrp-nautilus.io/salvarc/climate-ml:latest
+    workingDir: /tmp/results
+    resources:
+      limits:
+        memory: 100Mi
+        cpu: 100m
+      requests:
+        memory: 100Mi
+        cpu: 100m
+    command: ["sh", "-c", "echo 'Im a new pod' && sleep infinity"]
+    volumeMounts:
+      - name: oisst-daily
+        mountPath: /tmp/oisstv2-daily
+      - name: results-ckpts
+        mountPath: /tmp/results
+  volumes: # Persistent storage
+    - name: oisst-daily
+      persistentVolumeClaim:
+        claimName: oisst-daily
+    - name: results-ckpts
+      persistentVolumeClaim:
+        claimName: results-ckpts   # for saving logging stuff, results and checkpoints
